@@ -1,26 +1,45 @@
-import { rabbitMQ } from "./connection";
+import { channel, channel1 } from "../config/rabbitmq.conn"
 
-class Producer{
+/**
+ * @description publisher send messages at different queue on different channels
+ * @author Appinventiv Dev Team
+ */
 
-    async sendMsg(){
+class RabbitMQController {
+
+    async sendMsg(msg: string) {
         try {
-            const queue = 'tasks';
-            let message = 'this is pankaj';
-            const {ch1,conn}:any = await rabbitMQ.createConnection();
-            await ch1.sendToQueue(queue,Buffer.from(message));
-            console.log(message);
-            setTimeout(() => {
-                conn.close();
-            },1000)
+            channel.sendToQueue("hello", Buffer.from(msg));
+            channel1.sendToQueue("hii", Buffer.from(msg));
+            return;
         } catch (error) {
-            console.log(error);
+            console.error(`we have an error in send msg==> ${error}`);
             return error;
-        } 
+        }
     }
 }
 
-const producer = new Producer();
+export const rabbitMQController = new RabbitMQController();
 
-producer.sendMsg();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

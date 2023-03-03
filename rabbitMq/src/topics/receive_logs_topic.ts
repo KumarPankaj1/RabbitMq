@@ -1,43 +1,102 @@
-import { rabbitMQ } from "./connection";
+import { channel } from "../config/rabbitmq.conn"
+
+/**
+ * @description consumers receive messages from the bounded queue by routing key
+ * @author Appinventiv Dev Team
+ */
 
 class Consumer {
-  async receiveMsg(params:any) {
-    try {
-      const key = "us-east.billing.*";
-      // console.log(args);
-      
-      // if (args.length == 0) {
-      //   console.log("Usage: receive_logs_direct.ts [info] [warning] [error]");
-      //   process.exit(1);
-      // }
-      const exchangeName = "B";
-      const { ch1, conn }: any = await rabbitMQ.createConnection(params);
-      const q = await ch1.assertQueue("", {
-        exclusive: true,
-      });
+    async startConsume() {
+        let sec1 = 10, sec2 = 20;
+        channel.consume("topicQueue1", async function (msg: any) {
+            try {
+                if (msg && msg.content) {
+                    console.log(`Routing Key : ${msg.fields.routingKey}, Message : ${msg.content.toString()} Received From topicQueue1 and by consumer1`);
+                    setTimeout(() => {
+                        console.log("Done task by consumer1 ");
+                        channel.ack(msg); //  manual acknowledgment when task done
+                    }, 1000 * sec1)
+                }
+                return
+            }
+            catch (error) {
+                console.log("error", error)
+                return error
+            }
+        }, { noAck: false }) // auto ack and set it false if you are doing manual acknowledgement
 
-      console.log(`waiting for messages in queue: ${q.queue}`);
-      // args.forEach(function (severity:any) {
-      //   //   console.log(severity);
-      //   ch1.bindQueue(q.queue, exchangeName, severity);
-      // });
 
-       ch1.bindQueue(q.queue, exchangeName, key);
+        channel.consume("topicQueue1", async function (msg: any) {
+            try {
+                if (msg && msg.content) {
+                    console.log(`Routing Key : ${msg.fields.routingKey}, Message : ${msg.content.toString()} Received From topic Queue1 and by Consumer2`);
+                    setTimeout(() => {
+                        console.log("Done task by consumer1 ");
+                        channel.ack(msg);
+                    }, 1000 * sec1)
+                }
+                return
+            }
+            catch (error) {
+                console.log("error", error)
+                return error
+            }
+        }, { noAck: false })
 
-      ch1.consume(q.queue, (msg: any) => {
-        if (msg !== null) {
-          console.log("Recieved:", msg.content.toString());
-          ch1.ack(msg);
-        } else {
-          console.log("Consumer cancelled by server");
-        }
-      });
-    } catch (error) {
-      console.log(error);
-      return error;
+
+        channel.consume("topicQueue2", async function (msg: any) {
+            try {
+                if (msg && msg.content) {
+                    console.log(`Routing Key : ${msg.fields.routingKey}, Message : ${msg.content.toString()}, Received From topicQueue2 and by consumer1`);
+                    setTimeout(() => {
+                        console.log("Done task by consumer2 ");
+                        channel.ack(msg);
+                    }, 1000 * sec2)
+                }
+                return
+            }
+            catch (error) {
+                console.log("error", error)
+                return error
+            }
+        }, { noAck: false })
+
+
+        channel.consume("topicQueue3", async function (msg: any) {
+            try {
+                if (msg && msg.content) {
+                    console.log(`Routing Key : ${msg.fields.routingKey}, Message : ${msg.content.toString()} Received From topicQueue3 and by consumer1`);
+                    setTimeout(() => {
+                        console.log("Done task by consumer2 ");
+                        channel.ack(msg);
+                    }, 1000 * sec2)
+                }
+                return
+            }
+            catch (error) {
+                console.log("error", error)
+                return error
+            }
+        }, { noAck: false })
+
+
+        // channel.consume("topicQueue4", async function (msg: any) {
+        //     try {
+        //         if (msg && msg.content) {
+        //             console.log(`Routing Key : ${msg.fields.routingKey}, Message : ${msg.content.toString()} Received From topicQueue4 and by consumer1`);
+        //             // setTimeout(() => {
+        //             //     console.log("Done task by consumer2 ");
+        //             //     channel.ack(msg);
+        //             // }, 1000 * sec2)
+        //         }
+        //         return
+        //     }
+        //     catch (error) {
+        //         console.log("error", error)
+        //         return error
+        //     }
+        // }, { noAck: true })
     }
-  }
 }
-const producer = new Consumer();
-export default producer;
-// producer.recieveMsg();
+
+export const consumer = new Consumer();

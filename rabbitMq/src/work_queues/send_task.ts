@@ -1,10 +1,11 @@
-import { channel } from "../config/rabbitmq.conn"
+import {  channel } from "../config/rabbitmq.conn"
 
 class RabbitMQController {
 
-    async sendMsg(msg: string, key: string) {
+    async sendMsg(msg: string) {
         try {
-            channel.publish("Topic_logs", key, Buffer.from(msg));
+            channel.sendToQueue("hello", Buffer.from(msg));
+            // channel1.sendToQueue("hii", Buffer.from(msg));
             return;
         } catch (error) {
             console.error(`we have an error in send msg==> ${error}`);
@@ -14,6 +15,16 @@ class RabbitMQController {
 }
 
 export const rabbitMQController = new RabbitMQController();
+
+
+
+
+
+
+
+
+
+
 
 
 
